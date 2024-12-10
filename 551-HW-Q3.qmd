@@ -1,0 +1,216 @@
+---
+title: "STATS 551 - HW 5 - Q3"
+format: 
+  pdf:
+    pdf-engine: pdflatex
+    keep-tex: true
+    documentclass: article
+    fontsize: 10pt  
+    header-includes:
+      - \usepackage{geometry}
+      - \geometry{top=1in, bottom=1in, left=1in, right=1in}
+      - \usepackage{listings}
+      - \lstset{
+          breaklines=true,
+          breakatwhitespace=true,
+          basicstyle=\ttfamily\small,
+          frame=single,
+          tabsize=2,
+          xleftmargin=0.5cm,
+          xrightmargin=0.5cm}
+      - \usepackage{setspace}
+      - \setstretch{1.15}
+      - \usepackage{parskip}
+      - \setlength{\parskip}{0.5em}
+      - \setlength{\parindent}{0em}
+      - \setlength{\emergencystretch}{3em}
+      - \usepackage{placeins}
+  html:
+    prefer-html: true  
+editor: visual
+---
+
+## Exercise - 3
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(rstanarm)
+library(loo)
+library(Rcpp)
+
+options(mc.cores = parallel::detectCores()) 
+
+d1 <- read.csv("student-mat.csv") # math results  
+d2 <- read.csv("student-por.csv") # portugese results 
+
+# print(head(d1))
+# print(head(d2))
+# 
+# nrow(d1)
+# nrow(d2)
+# 
+# colnames(d1)
+# colnames(d2)
+
+# Pairwise correlation
+library(GGally)
+
+# Visualize relationships between continuous predictors and grade
+ggpairs(d1, columns = c("G3", "studytime", "failures", "absences"), 
+        aes(color = school)) +
+  labs(title = "Pairwise Correlation Between Predictors and Grade")
+```
+
+```{r}
+# Interaction between gender, studytime, and grade
+ggplot(d1, aes(x = studytime, y = G3, color = sex)) +
+  geom_smooth(method = "loess", se = FALSE) +
+  labs(title = "Interaction Between Study Time and Grade by Gender", 
+       x = "Study Time", y = "Final Grade")
+```
+
+```{r}
+# Interaction model
+interaction_model <- lm(G3 ~ studytime * sex + failures + absences, data = d1)
+
+# Model summary
+summary(interaction_model)
+
+```
+
+```{r}
+# Hierarchical model with varying slopes
+advanced_hierarchical_model <- stan_glmer(
+  G3 ~ studytime + failures + absences + (0 + studytime | school) + (0 + 1 | sex),
+  data = d1,
+  family = gaussian(),
+  prior_intercept = normal(10, 2),
+  prior = normal(0, 1),
+  prior_aux = cauchy(0, 2.5),
+  chains = 4,
+  iter = 4000,
+  seed = 123,
+  control = list(adapt_delta = 0.99,max_treedepth = 15)
+
+)
+
+# Model summary
+summary(advanced_hierarchical_model)
+```
+
+```{r}
+pairs(advanced_hierarchical_model, 
+      pars = c("(Intercept)", "studytime", "failures", "absences", "sigma"), 
+      pch = 20,
+      cex = 0.4)
+```
+
+```{r}
+summary(advanced_hierarchical_model)
+```
+
+```{r}
+posterior_summary <- as.data.frame(posterior_interval(advanced_hierarchical_model))
+print(posterior_summary)
+```
+
+```{r}
+# Global PPC
+pp_check(advanced_hierarchical_model) +
+  ggtitle("Global Posterior Predictive Check for Hierarchical Model")
+```
+
+```{r}
+# Group-level PPC
+pp_check(advanced_hierarchical_model, group = "school") +
+  ggtitle("Posterior Predictive Check by School")
+
+```
+
+```{r}
+# library(shinystan)
+# launch_shinystan(advanced_hierarchical_model)
+```
+
+```{r}
+# posterior <- as.matrix(advanced_hierarchical_model)
+# divergences <- sum(attr(posterior, "sampler_params")$divergent__)
+# print(divergences) 
+```
+
+```{r}
+# Install and load rstanarm if needed
+if (!requireNamespace("rstanarm", quietly = TRUE)) install.packages("rstanarm")
+library(rstanarm)
+
+# Bayesian interaction model
+bayesian_interaction_model <- stan_glm(
+  G3 ~ studytime * sex + failures + absences,
+  data = d1,
+  family = gaussian(),
+  prior_intercept = normal(10, 5),
+  prior = normal(0, 2.5),
+  prior_aux = cauchy(0, 2),
+  chains = 4,
+  iter = 2000,
+  seed = 123
+)
+
+```
+
+```{r}
+# Compute WAIC for the Bayesian models
+waic_one_param <- waic(bayesian_interaction_model)
+waic_hierarchical <- waic(advanced_hierarchical_model)
+
+# Print WAIC results
+print(waic_one_param)
+print(waic_hierarchical)
+
+```
+
+```{r}
+# Compute LOO for both models
+loo_one_param <- loo(bayesian_interaction_model)
+loo_hierarchical <- loo(advanced_hierarchical_model)
+
+# Compare models using loo_compare
+loo_comparison <- loo_compare(loo_one_param, loo_hierarchical)
+
+# Print LOO comparison results
+print(loo_comparison)
+```
+
+```{r}
+# Posterior predictive checks for the interaction model
+pp_check(bayesian_interaction_model)
+
+# Posterior predictive checks for the hierarchical model
+pp_check(advanced_hierarchical_model)
+
+```
+
+```{r}
+# Extract posterior samples for random effects
+library(bayesplot)
+
+posterior_samples <- as.data.frame(advanced_hierarchical_model)
+
+colnames(posterior_samples) # List all parameter names
+
+
+# Visualize posterior for group-level intercepts (schools)
+mcmc_areas(
+  posterior_samples,
+  pars = c("b[studytime school:GP]", "b[studytime school:MS]"),
+  prob = 0.8
+) +
+  labs(
+    title = "Posterior Distributions for School-Level Effects",
+    x = "Effect Size",
+    y = "Density"
+  )
+```
+
+------------------------------------------------------------------------

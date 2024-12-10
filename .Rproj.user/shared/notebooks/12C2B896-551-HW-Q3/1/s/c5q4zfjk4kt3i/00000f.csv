@@ -1,0 +1,92 @@
+"0","library(dplyr)"
+"2","
+Attaching package: ‘dplyr’
+
+"
+"2","The following objects are masked from ‘package:stats’:
+
+    filter, lag
+
+"
+"2","The following objects are masked from ‘package:base’:
+
+    intersect, setdiff, setequal, union
+
+"
+"0","library(ggplot2)"
+"0","library(rstanarm)"
+"2","Loading required package: Rcpp
+"
+"2","Registered S3 methods overwritten by 'htmltools':
+  method               from         
+  print.html           tools:rstudio
+  print.shiny.tag      tools:rstudio
+  print.shiny.tag.list tools:rstudio
+"
+"2","Registered S3 method overwritten by 'htmlwidgets':
+  method           from         
+  print.htmlwidget tools:rstudio
+"
+"2","This is rstanarm version 2.32.1
+"
+"2","- See https://mc-stan.org/rstanarm/articles/priors for changes to default priors!
+"
+"2","- Default priors may change, so it's safest to specify priors, even if equivalent to the defaults.
+"
+"2","- For execution on a local, multicore CPU with excess RAM we recommend calling
+"
+"2","  options(mc.cores = parallel::detectCores())
+"
+"2","
+Attaching package: ‘rstanarm’
+
+"
+"2","The following object is masked from ‘package:rstan’:
+
+    loo
+
+"
+"0","library(loo)"
+"2","This is loo version 2.8.0
+"
+"2","- Online documentation and vignettes at mc-stan.org/loo
+"
+"2","- As of v2.0.0 loo defaults to 1 core but we recommend using as many as possible. Use the 'cores' argument or set options(mc.cores = NUM_CORES) for an entire session. 
+"
+"2","- Windows 10 users: loo may be very slow if 'mc.cores' is set in your .Rprofile file (see https://github.com/stan-dev/loo/issues/94).
+"
+"2","
+Attaching package: ‘loo’
+
+"
+"2","The following object is masked from ‘package:rstan’:
+
+    loo
+
+"
+"0","library(Rcpp)"
+"0",""
+"0","options(mc.cores = parallel::detectCores()) "
+"0",""
+"0","d1 <- read.csv(""student-mat.csv"") # math results  "
+"0","d2 <- read.csv(""student-por.csv"") # portugese results "
+"0",""
+"0","# print(head(d1))"
+"0","# print(head(d2))"
+"0","# "
+"0","# nrow(d1)"
+"0","# nrow(d2)"
+"0","# "
+"0","# colnames(d1)"
+"0","# colnames(d2)"
+"0",""
+"0","# Pairwise correlation"
+"0","library(GGally)"
+"2","Registered S3 method overwritten by 'GGally':
+  method from   
+  +.gg   ggplot2
+"
+"0","# Visualize relationships between continuous predictors and grade"
+"0","ggpairs(d1, columns = c(""G3"", ""studytime"", ""failures"", ""absences""), "
+"0","        aes(color = school)) +"
+"0","  labs(title = ""Pairwise Correlation Between Predictors and Grade"")"

@@ -1,0 +1,4 @@
+"0","# Group-level PPC"
+"0","pp_check(advanced_hierarchical_model, group = ""school"") +"
+"0","  ggtitle(""Posterior Predictive Check by School"")"
+"2","Warning: The following arguments were unrecognized and ignored: group"

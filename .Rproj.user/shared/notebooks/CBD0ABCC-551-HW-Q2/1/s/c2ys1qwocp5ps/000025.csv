@@ -1,0 +1,50 @@
+"0","library(mcmc)"
+"0","library(MCMCpack)"
+"2","Loading required package: coda
+"
+"2","
+Attaching package: ‘coda’
+
+"
+"2","The following object is masked from ‘package:kernlab’:
+
+    nvar
+
+"
+"2","The following object is masked from ‘package:rstan’:
+
+    traceplot
+
+"
+"2","Loading required package: MASS
+"
+"2","
+Attaching package: ‘MASS’
+
+"
+"2","The following object is masked from ‘package:dplyr’:
+
+    select
+
+"
+"2","##
+## Markov Chain Monte Carlo Package (MCMCpack)
+"
+"2","## Copyright (C) 2003-2024 Andrew D. Martin, Kevin M. Quinn, and Jong Hee Park
+"
+"2","##
+## Support provided by the U.S. National Science Foundation
+"
+"2","## (Grants SES-0350646 and SES-0350613)
+##
+"
+"2","
+Attaching package: ‘MCMCpack’
+
+"
+"2","The following objects are masked from ‘package:brms’:
+
+    ddirichlet, rdirichlet
+
+"
+"0","pairs(fit, pars = c(""beta[1]"", ""beta[2]"", ""sigma""))"

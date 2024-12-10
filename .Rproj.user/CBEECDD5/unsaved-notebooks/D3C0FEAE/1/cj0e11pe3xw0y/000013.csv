@@ -1,0 +1,3 @@
+"0","# Compute LOO for both models"
+"0","loo_one_param <- loo(bayesian_interaction_model)"
+"0","loo_hierarchical <- loo(advanced_hierarchical_model)"

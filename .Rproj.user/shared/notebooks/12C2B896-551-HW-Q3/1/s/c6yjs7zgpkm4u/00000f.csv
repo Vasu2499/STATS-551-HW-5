@@ -1,0 +1,5 @@
+"0","# Interaction between gender, studytime, and grade"
+"0","ggplot(d1, aes(x = studytime, y = G3, color = sex)) +"
+"0","  geom_smooth(method = ""loess"", se = FALSE) +"
+"0","  labs(title = ""Interaction Between Study Time and Grade by Gender"", "
+"0","       x = ""Study Time"", y = ""Final Grade"")"

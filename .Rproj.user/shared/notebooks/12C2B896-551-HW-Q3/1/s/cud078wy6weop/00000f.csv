@@ -1,0 +1,3 @@
+"0","# posterior <- as.matrix(advanced_hierarchical_model)"
+"0","# divergences <- sum(attr(posterior, ""sampler_params"")$divergent__)"
+"0","# print(divergences) "

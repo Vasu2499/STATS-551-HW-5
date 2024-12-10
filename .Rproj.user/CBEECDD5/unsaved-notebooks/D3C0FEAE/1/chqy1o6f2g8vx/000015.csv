@@ -1,0 +1,2 @@
+"0","posterior_summary <- as.data.frame(posterior_interval(advanced_hierarchical_model))"
+"0","print(posterior_summary)"

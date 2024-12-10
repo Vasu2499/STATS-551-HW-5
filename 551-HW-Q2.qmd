@@ -1,0 +1,225 @@
+---
+title: "STATS 551 - HW 5 - Q2"
+format: 
+  pdf:
+    pdf-engine: pdflatex
+    keep-tex: true
+    documentclass: article
+    fontsize: 10pt  
+    header-includes:
+      - \usepackage{setspace}
+      - \setstretch{1.15}
+      - \usepackage{geometry}
+      - \geometry{top=1in, bottom=1in, left=1in, right=1in}
+      - \usepackage{parskip}
+      - \setlength{\parskip}{0.5em}
+      - \setlength{\parindent}{0em}
+      - \usepackage{listings}
+      - \lstset{breaklines=true, breakatwhitespace=true, basicstyle=\ttfamily\small, frame=single}
+      - \usepackage{graphicx}
+      - \usepackage{float}
+      - \usepackage{longtable}
+      - \usepackage{caption}
+      - \captionsetup{width=0.9\textwidth}
+      - \usepackage{wrapfig}
+      - \usepackage{hyperref}
+      - \setlength{\emergencystretch}{3em}
+  html:
+    prefer-html: true  
+editor: visual
+---
+
+```{r}
+# install.packages("rstan", repos = "https://cloud.r-project.org/")
+library(rstan)
+library(mcmc)
+```
+
+```{r}
+
+# Load data
+fact_data <- read.csv("factorial_data.csv")
+
+# Prepare data
+fact_data$temperature_sq <- fact_data$temperature^2
+fact_data$ratio_sq <- fact_data$ratio^2
+fact_data$contact_sq <- fact_data$contact^2
+fact_data$temperature_ratio <- fact_data$temperature * fact_data$ratio
+fact_data$ratio_contact <- fact_data$ratio * fact_data$contact
+fact_data$temperature_contact <- fact_data$temperature * fact_data$contact
+
+# Fit OLS model
+ols_model <- lm(conversion ~ temperature + ratio + contact + 
+                temperature_sq + ratio_sq + contact_sq + 
+                temperature_ratio + ratio_contact + temperature_contact, 
+                data = fact_data)
+summary(ols_model)
+
+```
+
+**Bayesian Model has been specified in STAN file**
+
+```{r}
+# Prepare data for Stan
+X <- scale(fact_data[, c("temperature", "ratio", "contact", 
+                         "temperature_sq", "ratio_sq", "contact_sq", 
+                         "temperature_ratio", "ratio_contact", "temperature_contact")])
+  
+y <- fact_data$conversion
+
+stan_data <- list(
+  N = nrow(fact_data),
+  K = ncol(X),
+  X = X,
+  y = y
+)
+
+# Fit Bayesian model
+fit <- stan(file = "Q2_Bayesian_Model.stan", data = stan_data, iter = 8000, chains = 4,             
+            control = list(adapt_delta = 0.99, max_treedepth = 15))
+
+print(fit)
+```
+
+```{r}
+library(mcmc)
+library(MCMCpack)
+library(bayesplot)
+
+pairs(fit, pars = c("beta[1]", "beta[2]", "sigma"))
+summary(fit) # R-hat and ESS for all parameters
+
+posterior <- as.array(fit)
+mcmc_trace(posterior, pars = c("beta[1]", "beta[2]", "sigma")) # Trace plots
+mcmc_pairs(posterior, pars = c("beta[1]", "beta[2]")) # Joint posterior diagnostics
+
+```
+
+```{r}
+fit_t4 <- stan(file = "Q2-Bayesian-Model-t4-prior.stan", 
+               data = stan_data, 
+               iter = 8000, 
+               chains = 4, 
+               control = list(adapt_delta = 0.9999, max_treedepth = 15))
+print(fit_t4)
+pairs(fit_t4, pars = c("beta[1]", "beta[2]", "sigma"))
+```
+
+```{r}
+posterior <- as.array(fit_t4)
+mcmc_trace(posterior, pars = c("beta[1]", "beta[2]", "sigma"))
+```
+
+```{r}
+library(glmnet)
+
+# Simulated example dataset
+set.seed(123)
+n <- 100
+data <- data.frame(
+  ratio = rnorm(n, 1300, 100),
+  contact = runif(n, 5, 23),
+  conversion = rnorm(n, 0.03, 0.01),
+  y = rnorm(n, 40, 10)
+)
+
+# Add interaction and squared terms
+data$ratio_sq <- data$ratio^2
+data$contact_sq <- data$contact^2
+data$conversion_sq <- data$conversion^2
+data$ratiocontact <- data$ratio * data$contact
+data$contactconversion <- data$contact * data$conversion
+data$ratioconversion <- data$ratio * data$conversion
+
+# Prepare matrix for glmnet
+X <- as.matrix(data[, c("ratio", "contact", "conversion", "ratio_sq", "contact_sq",
+                        "conversion_sq", "ratiocontact", "contactconversion",
+                        "ratioconversion")])
+y <- data$y
+
+# Fit ridge regression
+ridge_model <- glmnet(X, y, alpha = 0)  # alpha = 0 for ridge regression
+ridge_cv <- cv.glmnet(X, y, alpha = 0)  # Cross-validation to find best lambda
+ridge_best_lambda <- ridge_cv$lambda.min
+
+# Extract coefficients at best lambda
+ridge_coefficients <- coef(ridge_cv, s = ridge_best_lambda)
+print(ridge_coefficients)
+
+```
+
+```{r}
+# install.packages("brms")
+library(brms)
+
+# Fitting a Bayesian regression model
+posterior_model <- brm(
+  y ~ ratio + contact + conversion + ratio_sq + contact_sq + conversion_sq +
+    ratiocontact + contactconversion + ratioconversion,
+  data = data,
+  family = gaussian()
+)
+
+# Converting to array 
+posterior_array <- as.array(posterior_model)
+
+# inspecting posterior samples
+summary(posterior_array) 
+```
+
+```{r}
+# Fit LASSO regression
+lasso_model <- glmnet(X, y, alpha = 1)  # alpha = 1 for LASSO
+lasso_cv <- cv.glmnet(X, y, alpha = 1)  # Cross-validation to select lambda
+lasso_best_lambda <- lasso_cv$lambda.min
+lasso_coefficients <- coef(lasso_cv, s = lasso_best_lambda)
+lasso_coefficients
+```
+
+```{r}
+# install.packages("kernlab")
+library(kernlab)
+
+# Fit Gaussian Process model
+gpr_model <- gausspr(X, y, kernel = "rbfdot")
+gpr_predictions <- predict(gpr_model, X)
+
+# Compare predicted and observed values
+pred_obs <- data.frame(Observed = y, Predicted = gpr_predictions)
+print (pred_obs)
+# colnames(pred_obs)
+```
+
+```{r}
+# Error metrics
+mse <- mean((pred_obs$Observed - pred_obs$Predicted)^2)
+rmse <- sqrt(mse)
+mae <- mean(abs(pred_obs$Observed - pred_obs$Predicted))
+r_squared <- 1 - (sum((pred_obs$Observed - pred_obs$Predicted)^2) / 
+                    sum((pred_obs$Observed - mean(pred_obs$Observed))^2))
+
+cat("MSE:", mse, "\nRMSE:", rmse, "\nMAE:", mae, "\nR-squared:", r_squared)
+```
+
+```{r}
+# Visualization
+library(ggplot2)
+
+ggplot(pred_obs, aes(x = Observed, y = Predicted)) +
+  geom_point(color = "blue", size = 2.5) +
+  geom_abline(intercept = 0, slope = 1, color = "red", linetype = "dashed") +
+  labs(title = "Observed vs Predicted Values", x = "Observed", y = "Predicted") +
+  theme_minimal()
+```
+
+```{r}
+# Residuals
+pred_obs$Residuals <- pred_obs$Observed - pred_obs$Predicted
+
+# Plot residuals
+ggplot(pred_obs, aes(x = Observed, y = Residuals)) +
+  geom_point(color = "purple", size = 2.5) +
+  geom_hline(yintercept = 0, color = "red", linetype = "dashed") +
+  labs(title = "Residuals vs Observed Values", x = "Observed", y = "Residuals") +
+  theme_minimal()
+```

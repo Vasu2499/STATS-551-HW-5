@@ -1,0 +1,5 @@
+"0","pairs(advanced_hierarchical_model, "
+"0","      pars = c(""(Intercept)"", ""studytime"", ""failures"", ""absences"", ""sigma""), "
+"0","      pch = 20,"
+"0","      cex = 0.4)"
+"2","Warning: The following arguments were unrecognized and ignored: pch, cex"

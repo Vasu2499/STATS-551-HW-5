@@ -1,0 +1,2 @@
+"0","posterior <- as.array(fit_t4)"
+"0","mcmc_trace(posterior, pars = c(""beta[1]"", ""beta[2]"", ""sigma""))"

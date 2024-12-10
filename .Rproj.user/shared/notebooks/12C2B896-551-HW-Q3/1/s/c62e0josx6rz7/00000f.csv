@@ -1,0 +1,2 @@
+"0","# Posterior predictive checks for the interaction model"
+"0","pp_check(bayesian_interaction_model)"

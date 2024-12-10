@@ -1,0 +1,8 @@
+"0","# Visualization"
+"0","library(ggplot2)"
+"0",""
+"0","ggplot(pred_obs, aes(x = Observed, y = Predicted)) +"
+"0","  geom_point(color = ""blue"", size = 2.5) +"
+"0","  geom_abline(intercept = 0, slope = 1, color = ""red"", linetype = ""dashed"") +"
+"0","  labs(title = ""Observed vs Predicted Values"", x = ""Observed"", y = ""Predicted"") +"
+"0","  theme_minimal()"

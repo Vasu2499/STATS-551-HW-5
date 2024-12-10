@@ -1,0 +1,14 @@
+"0","# install.packages(""brms"")"
+"0","library(brms)"
+"0",""
+"0","# Fitting a Bayesian regression model"
+"0","posterior_model <- brm("
+"0","  y ~ ratio + contact + conversion + ratio_sq + contact_sq + conversion_sq + ratiocontact + contactconversion + ratioconversion,"
+"0","  data = data,"
+"0","  family = gaussian()"
+"0",")"
+"2","Compiling Stan program...
+"
+"2","Warning: cannot open file 'file67f067e76b8e.cpp.err.txt': Permission denied"
+"2","Error in file(con, ""r"") : cannot open the connection
+"

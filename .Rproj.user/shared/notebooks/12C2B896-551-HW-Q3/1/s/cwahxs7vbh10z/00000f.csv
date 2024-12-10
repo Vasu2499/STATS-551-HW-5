@@ -1,0 +1,18 @@
+"0","# Compute WAIC for the Bayesian models"
+"0","waic_one_param <- waic(bayesian_interaction_model)"
+"2","Warning: 
+1 (0.3%) p_waic estimates greater than 0.4. We recommend trying loo instead."
+"0","waic_hierarchical <- waic(advanced_hierarchical_model)"
+"0",""
+"0","# Print WAIC results"
+"0","print(waic_one_param)"
+"1","
+"
+"1","Computed from"
+"1"," "
+"1","4000 by 395"
+"1"," "
+"1","log-likelihood matrix.
+"
+"1","
+"
